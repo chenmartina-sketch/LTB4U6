@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-TW"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>龍騰 B4L6 單字口說練習室</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --secondary-color: #ecf0f1;
+            --text-color: #34495e;
+            --correct-color: #27ae60;
+            --wrong-color: #e74c3c;
+            --card-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+            background-color: #dfe6e9;
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- Login Styles --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #dfe6e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .login-box h2 { color: var(--primary-color); margin-bottom: 20px; }
+        select { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #bdc3c7; border-radius: 8px; font-size: 1rem; }
+        
+        .start-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        .start-btn:disabled { background-color: #95a5a6; cursor: not-allowed; }
+
+        /* --- Main App --- */
+        #app-content { display: none; width: 100%; flex-direction: column; align-items: center; padding-bottom: 50px; }
+        
+        header {
+            background: var(--primary-color);
+            color: white;
+            width: 100%;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        /* Stats Display Area */
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .live-stat {
+            font-size: 0.95rem;
+            color: #f1c40f;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        /* --- Flashcard Style --- */
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .word-header { margin-bottom: 15px; }
+        .word-text { font-size: 2.8rem; font-weight: bold; color: var(--primary-color); margin: 0; line-height: 1.2; }
+        .phonetic { font-family: "Lucida Sans Unicode", sans-serif; color: #7f8c8d; font-size: 1.1rem; margin-top: 5px; }
+        .pos-tag { 
+            display: inline-block; background: var(--primary-color); color: white; 
+            padding: 3px 8px; border-radius: 6px; font-size: 0.85rem; vertical-align: middle; margin-right: 10px;
+        }
+        .meaning { font-size: 1.4rem; color: #2c3e50; font-weight: bold; margin: 10px 0; }
+
+        /* --- Extra Info (Synonyms/Collocations) --- */
+        .extra-info {
+            text-align: left;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid var(--accent-color);
+            font-size: 0.95rem;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #7f8c8d;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-right: 5px;
+        }
+        .info-content { color: #34495e; }
+        .colloc-item {
+            display: inline-block;
+            background: #e8f6f3;
+            color: #16a085;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin: 2px;
+            font-size: 0.9rem;
+        }
+
+        /* --- Audio & Speech Controls --- */
+        .control-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn-audio {
+            background: white;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+        .btn-audio:hover { background: #ecf8ff; }
+
+        .btn-speak {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+        .btn-speak.listening { background: #e74c3c; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .speech-feedback {
+            min-height: 30px;
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .score-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            color: white;
+            margin-left: 10px;
+        }
+
+        /* --- Sentence Area --- */
+        .sentence-area {
+            background: var(--secondary-color);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .sentence-label { font-size: 0.8rem; text-transform: uppercase; color: #95a5a6; letter-spacing: 1px; font-weight: bold; }
+        .en-sentence { font-size: 1.1rem; color: #2c3e50; margin: 10px 0; line-height: 1.5; font-weight: 500; }
+        .ch-sentence { font-size: 0.95rem; color: #7f8c8d; }
+
+        /* --- Navigation --- */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            align-items: center;
+        }
+        .nav-btn {
+            background: white;
+            border: 1px solid #bdc3c7;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #2c3e50;
+            transition: 0.2s;
+        }
+        .nav-btn:hover { background: #ecf0f1; border-color: #95a5a6; }
+
+        .finish-btn {
+            background: var(--correct-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+        }
+        .finish-btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        /* --- Syllable Styling --- */
+        .stress { color: var(--wrong-color); font-weight: bold; }
+        .dot { color: #bdc3c7; }
+
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="" style="display: none;">
+        <div class="login-box">
+            <h2 class="">B4L6 口說練習室</h2>
+            <p class="">請選擇班級與姓名</p>
+            
+            <select id="class-select" onchange="populateStudents()" class="">
+                <option value="">-- 請選擇班級 --</option>
+                <option value="Control">Control Engineering</option>
+                <option value="Electrical">Electrical Engineering</option>
+                <option value="Graphic">Graphic Arts Communication</option>
+            </select>
+
+            <select id="student-select" class=""><option value="">-- 請選擇姓名 --</option><option value="01 Shirley">01 Shirley</option><option value="02 Dorina">02 Dorina</option><option value="03 Neo">03 Neo</option><option value="04 Benny">04 Benny</option><option value="05 Sean">05 Sean</option><option value="06 Chris">06 Chris</option><option value="07 Kelvin">07 Kelvin</option><option value="08 Ben">08 Ben</option><option value="09 Zeta">09 Zeta</option><option value="10 Jonathan">10 Jonathan</option><option value="11 Eric">11 Eric</option><option value="12 Sunrise">12 Sunrise</option><option value="13 Max">13 Max</option><option value="14 Bruce">14 Bruce</option><option value="15 Sam">15 Sam</option><option value="16 Booker">16 Booker</option><option value="17 Eric C">17 Eric C</option><option value="18 Ivan">18 Ivan</option><option value="19 Roger">19 Roger</option><option value="20 Ming">20 Ming</option><option value="21 Joe">21 Joe</option><option value="22 Benson">22 Benson</option><option value="23 Kevin">23 Kevin</option><option value="24 Feather">24 Feather</option><option value="25 Olaf">25 Olaf</option><option value="26 Howard">26 Howard</option><option value="27 Ken">27 Ken</option><option value="28 Denny">28 Denny</option><option value="29 Ian">29 Ian</option><option value="30 Alan">30 Alan</option><option value="31 Dean">31 Dean</option><option value="32 Scott">32 Scott</option><option value="33 Rain">33 Rain</option><option value="34 Jasper">34 Jasper</option><option value="35 Jay">35 Jay</option><option value="36 Han">36 Han</option><option value="37 Leo">37 Leo</option><option value="38 Rex">38 Rex</option><option value="39 Connie">39 Connie</option></select>
+
+            <button type="button" class="start-btn" onclick="enterApp()" id="enter-btn">開始練習 (Start)</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-content" class="" style="display: flex;">
+        <header class="">
+            <h1 style="margin:0; font-size:1.4rem;" class="">B4L6 Vocabulary Speaking</h1>
+            <div id="user-info" style="font-size:0.9rem; opacity:0.8; margin-top:2px;" class="">Electrical - Sean</div>
+            
+            <div class="stats-container">
+                <div id="current-avg-score" class="live-stat">平均分數: 0</div>
+                <div id="progress-count" class="live-stat">已練習: 0 / 64</div>
+            </div>
+
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 3.125%;"></div></div>
+        </header>
+
+        <div class="container">
+            <div class="card">
+                <!-- Word Section -->
+                <div class="word-header">
+                    <div id="word-display" class="word-text">be<span class="dot">‧</span><span class="stress">neath</span></div>
+                    <div id="phonetic-display" class="phonetic">[bɪ´niθ]</div>
+                    <div id="meaning-display" class="meaning">在⋯⋯下面</div>
+                    <div class=""><span id="pos-display" class="pos-tag">prep.</span></div>
+                </div>
+
+                <!-- Synonyms & Collocations -->
+                <div class="extra-info">
+                    <div style="margin-bottom: 8px;" class="">
+                        <span class="info-label">Synonyms/Antonyms:</span>
+                        <span id="synonyms-display" class="info-content">below, under; (ANT) above, over</span>
+                    </div>
+                    <div class="">
+                        <span class="info-label">Collocations:</span>
+                        <span id="collocations-display" class="info-content"><span class="colloc-item">sink beneath</span></span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <button type="button" class="btn-audio" onclick="speakText(currentWord)">
+                        🔊 聽單字 (Listen)
+                    </button>
+                    <button type="button" class="btn-speak" id="btn-speak-word" onclick="startListening('word')">🎤 唸單字 (Speak)</button>
+                </div>
+                <div id="feedback-word" class="speech-feedback fail">📡 網路連線問題。</div>
+
+                <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
+
+                <!-- Sentence Section -->
+                <div class="sentence-area">
+                    <div class="sentence-label">Example Sentence</div>
+                    <div id="sentence-en" class="en-sentence">After hitting a giant rock, the fishing boat started to sink beneath the waves.</div>
+                    <div id="sentence-ch" class="ch-sentence">在撞上一塊巨石後，那艘漁船開始沉入海浪之下。</div>
+                    
+                    <div class="control-group" style="justify-content: flex-start; margin-top:15px;">
+                        <button type="button" class="btn-audio" onclick="speakText(currentSentence)">
+                            🔊 聽例句
+                        </button>
+                        <button type="button" class="btn-speak" id="btn-speak-sent" onclick="startListening('sentence')" style="font-size:1rem; padding:8px 16px;">🎤 唸例句 (Speak)</button>
+                    </div>
+                    <div id="feedback-sentence" class="speech-feedback" style="text-align: left;"></div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="nav-bar">
+                    <button type="button" class="nav-btn" onclick="changeCard(-1)">← 上一個</button>
+                    <span id="counter" style="color:#7f8c8d; font-weight:bold;">1 / 32</span>
+                    <button type="button" class="nav-btn" onclick="changeCard(1)">下一個 →</button>
+                </div>
+
+                <button type="button" class="finish-btn" id="finish-btn" onclick="submitProgress()" style="display: none;">
+                    🎉 完成練習，傳送成績 (Finish)
+                </button>
+                <p id="status-msg" style="margin-top:10px; color:#666; font-weight:bold;"></p>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ********************************************
+    //  請在此設定 Google Apps Script 網址
+    // ********************************************
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyG96vvFA_twLAlVXJY_JWZ1-zqroX1KJd0WIgF4IjI5x62llYI-aX-FDoe15B2gd6E/exec"; 
+
+    // Data
+    const classData = {
+        "Control": ["01 Yvonne","02 Wendy","03 Sika","04 Andy","05 Yoyo","06 Iverson","07 Toyz","08 Omen","09 Hardy","10 Kayo","11 James","12 Clove","13 Neon","15 William","16 Steven","17 Ken","18 Jay","19 Yoke","20 Leo","21 Kevin","22 Eason","23 Ian","24 Bryant","25 Sage","26 Kiwi","27 Gebor","28 Raze","30 Yuka","31 Jack","32 Jacob","33 News","34 Vincent","35 Ethan","36 Matt"],
+        "Electrical": ["01 Shirley","02 Dorina","03 Neo","04 Benny","05 Sean","06 Chris","07 Kelvin","08 Ben","09 Zeta","10 Jonathan","11 Eric","12 Sunrise","13 Max","14 Bruce","15 Sam","16 Booker","17 Eric C","18 Ivan","19 Roger","20 Ming","21 Joe","22 Benson","23 Kevin","24 Feather","25 Olaf","26 Howard","27 Ken","28 Denny","29 Ian","30 Alan","31 Dean","32 Scott","33 Rain","34 Jasper","35 Jay","36 Han","37 Leo","38 Rex","39 Connie"],
+        "Graphic": ["01 Pearl","02 Ann","03 Eva","04 Eileen","05 Nebula","06 Genie","07 Emily","09 Afra","10 Megan","11 Rita","12 Angela","13 Kinoko","14 Diana","15 Rena","17 Liz","18 Zoe","19 Ella","20 Melody","21 Lucy","22 Billie","23 Mia","24 Lillian","25 Claire","26 Annie","27 Jessie","28 Timmy","29 Eden","30 Coby","31 John","32 Peter","33 Wesley","34 Mike","35 Thomas","36 Vincent"]
+    };
+
+    // Book 4 Lesson 6 Vocabulary Data
+    const vocabData = [
+        { word: "beneath", display: "be<span class='dot'>‧</span><span class='stress'>neath</span>", phonetic: "[bɪ´niθ]", pos: "prep.", meaning: "在⋯⋯下面", sent: "After hitting a giant rock, the fishing boat started to sink beneath the waves.", trans: "在撞上一塊巨石後，那艘漁船開始沉入海浪之下。", synonyms: "below, under; (ANT) above, over", collocations: ["sink beneath"] },
+        { word: "remarkable", display: "re<span class='dot'>‧</span><span class='stress'>mark</span><span class='dot'>‧</span>a<span class='dot'>‧</span>ble", phonetic: "[rɪ´mɑrkəbḷ]", pos: "adj.", meaning: "非凡的", sent: "It is remarkable that Malala won the Nobel Peace Prize at the age of 17.", trans: "馬拉拉17歲就獲得諾貝爾和平獎真的很了不起。", synonyms: "outstanding", collocations: ["it is remarkable that"] },
+        { word: "afford", display: "af<span class='dot'>‧</span><span class='stress'>ford</span>", phonetic: "[ə´fɔrd]", pos: "vt.", meaning: "負擔得起", sent: "Blair can’t afford to buy a scooter, not to mention a new car.", trans: "Blair買不起一部機車，更不用說買一輛新汽車了。", synonyms: "", collocations: ["afford to buy", "can't afford"] },
+        { word: "fate", display: "<span class='stress'>fate</span>", phonetic: "[fet]", pos: "n. [U]", meaning: "天意", sent: "Fate brought Fred and Andrea together when they bumped into each other on a bus.", trans: "當Fred和Andrea在公車上偶遇時，是天意將他們湊在一起。", synonyms: "destiny", collocations: ["fate brought them together"] },
+        { word: "pursue", display: "pur<span class='dot'>‧</span><span class='stress'>sue</span>", phonetic: "[pɚ´su]", pos: "vt.", meaning: "追求", sent: "Gloria decided to pursue a career in acting.", trans: "Gloria決定從事演藝工作。", synonyms: "go after", collocations: ["pursue a career"] },
+        { word: "devote", display: "de<span class='dot'>‧</span><span class='stress'>vote</span>", phonetic: "[dɪ´vot]", pos: "vt.", meaning: "奉獻⋯⋯", sent: "Dr. Bell devoted himself to protecting the environment.", trans: "Bell博士為保護環境奉獻他自己。", synonyms: "dedicate", collocations: ["devote oneself to"] },
+        { word: "devotion", display: "de<span class='dot'>‧</span><span class='stress'>vo</span><span class='dot'>‧</span>tion", phonetic: "[dɪ´voʃən]", pos: "n. [U]", meaning: "奉獻", sent: "Mrs. Sung was presented an award for her devotion to education.", trans: "宋女士因為她對教育的奉獻獲得了一個獎項。", synonyms: "", collocations: ["devotion to"] },
+        { word: "meanwhile", display: "<span class='stress'>mean</span><span class='dot'>‧</span>while", phonetic: "[´min͵hwaɪl]", pos: "adv.", meaning: "（與此）同時", sent: "Our dinner will be ready soon. Meanwhile, would you set the table?", trans: "我們的晚餐快準備好了。與此同時，你可以擺放餐具嗎？", synonyms: "in the meantime", collocations: ["meanwhile"] },
+        { word: "cruel", display: "<span class='stress'>cru</span><span class='dot'>‧</span>el", phonetic: "[´kruəl]", pos: "adj.", meaning: "殘酷的", sent: "It’s cruel of the boss to make us work outside on such a cold day.", trans: "老闆要我們在這麼冷的天氣在外頭工作真的很殘忍。", synonyms: "", collocations: ["cruel of someone", "cruel world"] },
+        { word: "sacrifice", display: "<span class='stress'>sac</span><span class='dot'>‧</span>ri<span class='dot'>‧</span>fice", phonetic: "[´sækrə͵faɪs]", pos: "n. [U, C]", meaning: "犧牲", sent: "Stan takes care of many stray animals and does so at great personal sacrifice.", trans: "Stan為了照顧許多流浪動物做出很多個人犧牲。", synonyms: "", collocations: ["make a sacrifice", "great sacrifice"] },
+        { word: "sacrifice", display: "<span class='stress'>sac</span><span class='dot'>‧</span>ri<span class='dot'>‧</span>fice", phonetic: "[´sækrə͵faɪs]", pos: "vt.", meaning: "犧牲", sent: "Many soldiers sacrificed their precious lives for their country in the battle.", trans: "許多士兵在那場戰役中為他們的國家犧牲了自己寶貴的生命。", synonyms: "", collocations: ["sacrifice their lives"] },
+        { word: "graduate", display: "<span class='stress'>grad</span><span class='dot'>‧</span>u<span class='dot'>‧</span>ate", phonetic: "[´grædʒʊ͵et]", pos: "vi.", meaning: "畢業", sent: "Sandy was determined to become a good doctor after graduating from medical school.", trans: "Sandy決心從醫學院畢業後要當個好醫生。", synonyms: "", collocations: ["graduate from"] },
+        { word: "graduation", display: "grad<span class='dot'>‧</span>u<span class='dot'>‧</span><span class='stress'>a</span><span class='dot'>‧</span>tion", phonetic: "[͵grædʒʊ´eʃən]", pos: "n. [U]", meaning: "畢業", sent: "Lynn planned to go on a working holiday in Australia after her graduation.", trans: "Lynn計劃畢業後去澳洲打工度假。", synonyms: "", collocations: ["after graduation", "graduation ceremony"] },
+        { word: "professional", display: "pro<span class='dot'>‧</span><span class='stress'>fes</span><span class='dot'>‧</span>sion<span class='dot'>‧</span>al", phonetic: "[prə´fɛʃənḷ]", pos: "adj.", meaning: "專業的；職業的", sent: "I suggest that you seek professional advice before trying to become a YouTuber.", trans: "我建議你在試著成為YouTube影片創作者之前先尋求專業意見。", synonyms: "(ANT) amateur", collocations: ["professional advice", "professional player"] },
+        { word: "profession", display: "pro<span class='dot'>‧</span><span class='stress'>fes</span><span class='dot'>‧</span>sion", phonetic: "[prə´fɛʃən]", pos: "n. [C]", meaning: "（需要專業技能的）職業", sent: "Ronnie left the teaching profession and started to sell fried chicken.", trans: "Ronnie離開教職並且開始賣起了炸雞。", synonyms: "career", collocations: ["teaching profession", "enter a profession"] },
+        { word: "triumph", display: "<span class='stress'>tri</span><span class='dot'>‧</span>umph", phonetic: "[´traɪəmf]", pos: "n. [U]", meaning: "勝利", sent: "After they won the World Cup, the soccer team returned home in triumph.", trans: "在他們贏得世界盃之後，那支足球隊勝利回到家鄉。", synonyms: "victory; (ANT) failure", collocations: ["in triumph", "a great triumph"] },
+        { word: "celebration", display: "cel<span class='dot'>‧</span>e<span class='dot'>‧</span><span class='stress'>bra</span><span class='dot'>‧</span>tion", phonetic: "[͵sɛlə´breʃən]", pos: "n. [C]", meaning: "慶祝；慶典", sent: "Our New Year’s celebrations included great food, wonderful music, and beautiful fireworks.", trans: "我們新年的慶祝包括絕佳的食物、美妙的音樂和美麗的煙火。", synonyms: "", collocations: ["New Year’s celebration", "in celebration of"] },
+        { word: "weaken", display: "<span class='stress'>weak</span><span class='dot'>‧</span>en", phonetic: "[´wikən]", pos: "vt. vi.", meaning: "削弱", sent: "Building the tunnel will weaken the structure of the mountain.", trans: "建造這條隧道會削弱這座山的結構。", synonyms: "lessen", collocations: ["weaken the structure", "weaken the power"] },
+        { word: "artistic", display: "ar<span class='dot'>‧</span><span class='stress'>tis</span><span class='dot'>‧</span>tic", phonetic: "[ɑr´tɪstɪk]", pos: "adj.", meaning: "藝術的", sent: "Fiona has great artistic skills. She can draw just about anything.", trans: "Fiona有很棒的藝術技巧。她可以畫出幾乎任何東西。", synonyms: "", collocations: ["artistic skills", "artistic talent"] },
+        { word: "barely", display: "<span class='stress'>bare</span><span class='dot'>‧</span>ly", phonetic: "[´bɛrlɪ]", pos: "adv.", meaning: "幾乎不；僅僅", sent: "I could barely recognize Stephen after he had lost 20 kilograms.", trans: "Stephen瘦了20公斤之後，我幾乎認不出他來。", synonyms: "hardly", collocations: ["barely recognize", "barely survive"] },
+        { word: "ruined", display: "<span class='stress'>ru</span><span class='dot'>‧</span>ined", phonetic: "[´rʊɪnd]", pos: "adj.", meaning: "受損的", sent: "Anne threw away her ruined shoes after walking in the rain.", trans: "Anne在她走在雨中過後丟掉她受損的鞋子。", synonyms: "destroyed, damaged", collocations: ["ruined shoes", "ruined building"] },
+        { word: "ruin", display: "<span class='stress'>ru</span><span class='dot'>‧</span>in", phonetic: "[´rʊɪn]", pos: "vt.", meaning: "破壞", sent: "The fire ruined a large number of trees in the forest.", trans: "大火破壞了很多森林裡的樹木。", synonyms: "destroy, damage", collocations: ["ruin the mood", "ruin a plan"] },
+        { word: "symbol", display: "<span class='stress'>sym</span><span class='dot'>‧</span>bol", phonetic: "[´sɪmbḷ]", pos: "n. [C]", meaning: "象徵", sent: "A red heart with an arrow through it is often a symbol of love.", trans: "一個紅心和一支穿過它的箭常常是愛的象徵。", synonyms: "", collocations: ["symbol of love", "national symbol"] },
+        { word: "ambition", display: "am<span class='dot'>‧</span><span class='stress'>bi</span><span class='dot'>‧</span>tion", phonetic: "[æm´bɪʃən]", pos: "n. [C]", meaning: "抱負；志向", sent: "The captain had an ambition to find great treasures at the bottom of the sea.", trans: "這位船長有一個野心要去尋找在海底的寶藏。", synonyms: "desire", collocations: ["have an ambition to", "lifelong ambition"] },
+        { word: "ambitious", display: "am<span class='dot'>‧</span><span class='stress'>bi</span><span class='dot'>‧</span>tious", phonetic: "[æm´bɪʃəs]", pos: "adj.", meaning: "有抱負的；雄心勃勃的", sent: "Mr. King is an ambitious businessman and won’t quit till he succeeds.", trans: "金先生是一個雄心勃勃的商人，在他成功之前是不會放棄的。", synonyms: "", collocations: ["ambitious businessman", "ambitious plan"] },
+        { word: "make ends meet", display: "make ends meet", phonetic: "phr.", pos: "phr.", meaning: "收支平衡；勉強餬口", sent: "The worker earns little, so it is hard for him to make ends meet.", trans: "這位工人賺的錢很少，所以對他來說很難收支平衡。", synonyms: "", collocations: ["hard to make ends meet"] },
+        { word: "dream of", display: "dream of", phonetic: "phr.", pos: "phr.", meaning: "夢想⋯⋯", sent: "Have you ever dreamed of sailing around the world?", trans: "你是否曾夢想航行環遊世界？", synonyms: "dream about", collocations: ["dream of sailing"] },
+        { word: "take a break", display: "take a break", phonetic: "phr.", pos: "phr.", meaning: "休息一下", sent: "Let’s take a break for ten minutes. My legs are killing me!", trans: "讓我們休息十分鐘。我的腿快痛死我了！", synonyms: "take a rest", collocations: ["take a short break"] },
+        { word: "in vain", display: "in vain", phonetic: "phr.", pos: "phr.", meaning: "白費；徒然", sent: "The hiker tried in vain to start a campfire in the rain.", trans: "這名健行者試圖在雨中生營火但只是白費力氣。", synonyms: "", collocations: ["try in vain"] },
+        { word: "make a name for oneself", display: "make a name for oneself", phonetic: "phr.", pos: "phr.", meaning: "成名", sent: "Johnson is making a name for himself as an excellent chef in a three-star Michelin restaurant.", trans: "Johnson以身為一位優異的米其林三星餐廳主廚而聞名。", synonyms: "become famous", collocations: ["making a name for himself"] },
+        { word: "lay down", display: "lay down", phonetic: "phr.", pos: "phr.", meaning: "放下", sent: "Although Ruby laid down her baby very gently on the bed, he still woke up and started to cry.", trans: "儘管Ruby很輕柔地把嬰兒放到床上，但他仍然醒來並開始哭泣。", synonyms: "put down, place down", collocations: ["laid down her baby"] },
+        { word: "hold back", display: "hold back", phonetic: "phr.", pos: "phr.", meaning: "忍住⋯⋯；抑制住", sent: "Rebecca couldn’t hold back her tears when her boyfriend proposed to her.", trans: "當Rebecca的男朋友向她求婚時，她無法忍住眼淚。", synonyms: "", collocations: ["hold back tears", "hold back anger"] }
+    ];
+
+    let currentIndex = 0;
+    let currentUser = { class: "", name: "" };
+    let recognition;
+    let isListening = false;
+    let currentWord = "";
+    let currentSentence = "";
+    let activeTargetType = ""; 
+    let storageKey = ""; 
+
+    let userScores = vocabData.map(() => ({word: 0, sent: 0}));
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+    } else {
+        alert("⚠️ 您的瀏覽器不支援語音辨識，請使用 Chrome (電腦版) 或 Microsoft Edge。");
+    }
+
+    function populateStudents() {
+        const cVal = document.getElementById("class-select").value;
+        const sSelect = document.getElementById("student-select");
+        sSelect.innerHTML = "<option value=''>-- 請選擇姓名 --</option>";
+        
+        if (cVal && classData[cVal]) {
+            classData[cVal].forEach(s => {
+                const opt = document.createElement("option");
+                opt.value = s;
+                opt.textContent = s;
+                sSelect.appendChild(opt);
+            });
+            sSelect.disabled = false;
+        } else {
+            sSelect.disabled = true;
+        }
+    }
+
+    document.getElementById("student-select").addEventListener("change", function(){
+        document.getElementById("enter-btn").disabled = (this.value === "");
+    });
+
+    function enterApp() {
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+            alert("⚠️ 請注意：為了使用麥克風功能，請確保此網站是在 HTTPS 安全連線下開啟。");
+        }
+        currentUser.class = document.getElementById("class-select").value;
+        currentUser.name = document.getElementById("student-select").value;
+        
+        storageKey = `B4L6_Progress_${currentUser.class}_${currentUser.name}`;
+        const savedScores = localStorage.getItem(storageKey);
+        
+        if (savedScores) {
+            try {
+                const parsedScores = JSON.parse(savedScores);
+                if (Array.isArray(parsedScores)) {
+                    for (let i = 0; i < Math.min(parsedScores.length, userScores.length); i++) {
+                        if (parsedScores[i]) {
+                            userScores[i].word = parsedScores[i].word || 0;
+                            userScores[i].sent = parsedScores[i].sent || 0;
+                        }
+                    }
+                    alert("✅ 系統已為您自動載入上次的練習紀錄！(Loaded previous progress)");
+                }
+            } catch (e) {
+                console.error("載入進度發生錯誤", e);
+            }
+        }
+
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("app-content").style.display = "flex";
+        
+        const shortName = currentUser.name.split(" ")[1] || currentUser.name;
+        document.getElementById("user-info").textContent = `${currentUser.class} - ${shortName}`;
+        
+        updateCard();
+        updateAvgScoreDisplay(); 
+    }
+
+    function updateCard() {
+        const item = vocabData[currentIndex];
+        currentWord = item.word;
+        currentSentence = item.sent;
+
+        document.getElementById("word-display").innerHTML = item.display;
+        document.getElementById("phonetic-display").textContent = item.phonetic;
+        document.getElementById("pos-display").textContent = item.pos;
+        document.getElementById("meaning-display").textContent = item.meaning;
+        
+        document.getElementById("synonyms-display").textContent = item.synonyms || "None";
+        const colContainer = document.getElementById("collocations-display");
+        colContainer.innerHTML = "";
+        if(item.collocations && item.collocations.length > 0) {
+            item.collocations.forEach(c => {
+                const span = document.createElement("span");
+                span.className = "colloc-item";
+                span.textContent = c;
+                colContainer.appendChild(span);
+            });
+        } else {
+            colContainer.textContent = "None";
+        }
+
+        document.getElementById("sentence-en").textContent = item.sent;
+        document.getElementById("sentence-ch").textContent = item.trans;
+        document.getElementById("counter").textContent = `${currentIndex + 1} / ${vocabData.length}`;
+        
+        const percent = ((currentIndex + 1) / vocabData.length) * 100;
+        document.getElementById("progress-fill").style.width = `${percent}%`;
+
+        document.getElementById("feedback-word").innerHTML = "";
+        document.getElementById("feedback-word").className = "speech-feedback";
+        document.getElementById("feedback-sentence").innerHTML = "";
+        document.getElementById("feedback-sentence").className = "speech-feedback";
+
+        const currentScores = userScores[currentIndex];
+        if(currentScores.word > 0) {
+            document.getElementById("feedback-word").innerHTML = `<span style='color:#f1c40f'>最佳紀錄: ${currentScores.word}%</span>`;
+        }
+        if(currentScores.sent > 0) {
+            document.getElementById("feedback-sentence").innerHTML = `<span style='color:#f1c40f'>最佳紀錄: ${currentScores.sent}%</span>`;
+        }
+
+        if (currentIndex === vocabData.length - 1) {
+            document.getElementById("finish-btn").style.display = "block";
+        } else {
+            document.getElementById("finish-btn").style.display = "none";
+        }
+    }
+
+    function changeCard(dir) {
+        currentIndex = (currentIndex + dir + vocabData.length) % vocabData.length;
+        updateCard();
+    }
+
+    function speakText(text) {
+        if(isListening && recognition) {
+            recognition.abort();
+            resetListeningUI();
+        }
+        window.speechSynthesis.cancel(); 
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function startListening(targetType) {
+        if (!recognition) { alert("您的瀏覽器不支援此功能。"); return; }
+
+        if (isListening) {
+            recognition.abort();
+            isListening = false;
+            resetListeningUI();
+            if(activeTargetType === targetType) { return; }
+            setTimeout(() => { startListening(targetType); }, 300);
+            return;
+        }
+        
+        resetListeningUI();
+        activeTargetType = targetType;
+        const btnId = targetType === 'word' ? 'btn-speak-word' : 'btn-speak-sent';
+        const feedbackId = targetType === 'word' ? 'feedback-word' : 'feedback-sentence';
+
+        const btn = document.getElementById(btnId);
+        const feedback = document.getElementById(feedbackId);
+
+        try {
+            btn.classList.add("listening");
+            btn.textContent = "👂 聆聽中...";
+            feedback.textContent = "請大聲朗讀...";
+            feedback.className = "speech-feedback";
+            
+            isListening = true;
+            recognition.start();
+        } catch(e) {
+            console.error("Microphone error:", e);
+            feedback.textContent = "⚠️ 麥克風啟動過快，請再按一次。";
+            resetListeningUI();
+            isListening = false;
+        }
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            const targetText = targetType === 'word' ? currentWord : currentSentence;
+            
+            const score = calculateSimilarity(transcript, targetText);
+            const scorePercent = Math.round(score * 100);
+
+            const prop = targetType === 'word' ? 'word' : 'sent';
+            userScores[currentIndex][prop] = Math.max(userScores[currentIndex][prop], scorePercent);
+            
+            try {
+                if (storageKey) {
+                    localStorage.setItem(storageKey, JSON.stringify(userScores));
+                }
+            } catch(e) {
+                console.error("儲存失敗", e);
+            }
+
+            let badgeClass = scorePercent >= 80 ? "background:#27ae60;" : (scorePercent >= 50 ? "background:#f39c12;" : "background:#c0392b;");
+            
+            let displayHtml = `我聽到: "<strong>${transcript}</strong>" <span class="score-badge" style="${badgeClass}">精準度: ${scorePercent}%</span>`;
+            
+            if (scorePercent >= 80) { 
+                displayHtml += " <br>✅ 太棒了！發音很標準！";
+                feedback.className = "speech-feedback success";
+            } else {
+                displayHtml += " <br>💪 加油，再試一次會更好！";
+                feedback.className = "speech-feedback fail";
+            }
+            feedback.innerHTML = displayHtml;
+            
+            updateAvgScoreDisplay();
+            isListening = false;
+            resetListeningUI();
+        };
+
+        recognition.onend = function() {
+            if(isListening) { isListening = false; resetListeningUI(); }
+        };
+
+        recognition.onerror = function(event) {
+            if (event.error === 'aborted') return;
+
+            let errorMsg = "";
+            switch(event.error) {
+                case 'not-allowed': errorMsg = "🚫 麥克風被封鎖，請檢查瀏覽器設定。"; break;
+                case 'no-speech': errorMsg = "🔇 沒聽到聲音，請再試一次。"; break;
+                case 'network': errorMsg = "📡 網路連線問題。"; break;
+                default: errorMsg = "❌ 發生錯誤: " + event.error;
+            }
+            feedback.textContent = errorMsg;
+            feedback.className = "speech-feedback fail";
+            isListening = false;
+            resetListeningUI();
+        };
+    }
+
+    function resetListeningUI() {
+        document.getElementById('btn-speak-word').classList.remove("listening");
+        document.getElementById('btn-speak-word').textContent = "🎤 唸單字 (Speak)";
+        document.getElementById('btn-speak-sent').classList.remove("listening");
+        document.getElementById('btn-speak-sent').textContent = "🎤 唸例句 (Speak)";
+    }
+
+    function calculateSimilarity(s1, s2) {
+        let longer = s1.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+        let shorter = s2.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+        if (s1.length < s2.length) { longer = shorter; shorter = s1.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim(); }
+        let longerLength = longer.length;
+        if (longerLength == 0) return 1.0;
+        return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+    }
+
+    function editDistance(s1, s2) {
+        let costs = new Array();
+        for (let i = 0; i <= s1.length; i++) {
+            let lastValue = i;
+            for (let j = 0; j <= s2.length; j++) {
+                if (i == 0) costs[j] = j;
+                else {
+                    if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) != s2.charAt(j - 1))
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+            }
+            if (i > 0) costs[s2.length] = lastValue;
+        }
+        return costs[s2.length];
+    }
+
+    function calculateCompletedCount() {
+        let count = 0;
+        userScores.forEach(item => {
+            if(item.word > 0) count++;
+            if(item.sent > 0) count++;
+        });
+        return count;
+    }
+
+    function calculateFinalAverage() {
+        let total = 0;
+        let count = 0;
+        userScores.forEach(item => {
+            if(item.word > 0) { total += item.word; count++; }
+            if(item.sent > 0) { total += item.sent; count++; }
+        });
+        return count === 0 ? 0 : Math.round(total / count);
+    }
+
+    function updateAvgScoreDisplay() {
+        const avg = calculateFinalAverage();
+        const completed = calculateCompletedCount();
+        const totalItems = vocabData.length * 2; 
+        
+        document.getElementById("current-avg-score").textContent = `平均分數: ${avg}`;
+        document.getElementById("progress-count").textContent = `已練習: ${completed} / ${totalItems}`;
+    }
+
+    function submitProgress() {
+        const btn = document.getElementById("finish-btn");
+        const status = document.getElementById("status-msg");
+        
+        const finalScore = calculateFinalAverage();
+        const completed = calculateCompletedCount();
+        const totalItems = vocabData.length * 2;
+
+        if(scriptURL === "" || scriptURL.includes("您的_GOOGLE_SCRIPT_網址_貼在這裡")) {
+            status.textContent = `⚠️ 練習已完成！平均分: ${finalScore} (展示模式，未設定 Google Sheet)`;
+            status.style.color = "#e67e22";
+            return;
+        }
+
+        if(scriptURL.includes("/edit")) {
+            alert("❌ 網址錯誤！\n您貼到的是「編輯頁面」的網址。\n請重新部署，並複製「網頁應用程式 (Web App)」的網址 (結尾通常是 /exec)。");
+            status.textContent = "❌ 網址格式錯誤 (/edit)";
+            status.style.color = "red";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "傳送中...";
+
+        const qNumInfo = `B4L6 Speaking (${completed}/${totalItems})`;
+
+        const data = {
+            className: currentUser.class,
+            studentName: currentUser.name,
+            score: finalScore, 
+            qNum: qNumInfo
+        };
+
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' }
+        })
+        .then(() => {
+            status.textContent = `✅ 紀錄已成功傳送！(分: ${finalScore}, 題: ${completed}/${totalItems})`;
+            status.style.color = "green";
+            btn.textContent = "已完成";
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ 傳送錯誤: " + err.message);
+            status.textContent = "❌ 傳送失敗: " + err.message;
+            status.style.color = "red";
+            btn.disabled = false;
+        });
+    }
+</script>
+
+
+```eof</body></html>
