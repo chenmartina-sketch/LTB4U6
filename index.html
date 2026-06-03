@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-TW"><head>
+<html lang="zh-TW">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>龍騰 B4L6 單字口說練習室</title>
@@ -276,57 +277,59 @@
 <body>
 
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="" style="display: none;">
+    <div id="login-screen">
         <div class="login-box">
-            <h2 class="">B4L6 口說練習室</h2>
-            <p class="">請選擇班級與姓名</p>
+            <h2>B4L6 口說練習室</h2>
+            <p>請選擇班級與姓名</p>
             
-            <select id="class-select" onchange="populateStudents()" class="">
+            <select id="class-select" onchange="populateStudents()">
                 <option value="">-- 請選擇班級 --</option>
                 <option value="Control">Control Engineering</option>
                 <option value="Electrical">Electrical Engineering</option>
                 <option value="Graphic">Graphic Arts Communication</option>
             </select>
 
-            <select id="student-select" class=""><option value="">-- 請選擇姓名 --</option><option value="01 Shirley">01 Shirley</option><option value="02 Dorina">02 Dorina</option><option value="03 Neo">03 Neo</option><option value="04 Benny">04 Benny</option><option value="05 Sean">05 Sean</option><option value="06 Chris">06 Chris</option><option value="07 Kelvin">07 Kelvin</option><option value="08 Ben">08 Ben</option><option value="09 Zeta">09 Zeta</option><option value="10 Jonathan">10 Jonathan</option><option value="11 Eric">11 Eric</option><option value="12 Sunrise">12 Sunrise</option><option value="13 Max">13 Max</option><option value="14 Bruce">14 Bruce</option><option value="15 Sam">15 Sam</option><option value="16 Booker">16 Booker</option><option value="17 Eric C">17 Eric C</option><option value="18 Ivan">18 Ivan</option><option value="19 Roger">19 Roger</option><option value="20 Ming">20 Ming</option><option value="21 Joe">21 Joe</option><option value="22 Benson">22 Benson</option><option value="23 Kevin">23 Kevin</option><option value="24 Feather">24 Feather</option><option value="25 Olaf">25 Olaf</option><option value="26 Howard">26 Howard</option><option value="27 Ken">27 Ken</option><option value="28 Denny">28 Denny</option><option value="29 Ian">29 Ian</option><option value="30 Alan">30 Alan</option><option value="31 Dean">31 Dean</option><option value="32 Scott">32 Scott</option><option value="33 Rain">33 Rain</option><option value="34 Jasper">34 Jasper</option><option value="35 Jay">35 Jay</option><option value="36 Han">36 Han</option><option value="37 Leo">37 Leo</option><option value="38 Rex">38 Rex</option><option value="39 Connie">39 Connie</option></select>
+            <select id="student-select" disabled>
+                <option value="">-- 請先選擇班級 --</option>
+            </select>
 
-            <button type="button" class="start-btn" onclick="enterApp()" id="enter-btn">開始練習 (Start)</button>
+            <button type="button" class="start-btn" onclick="enterApp()" id="enter-btn" disabled>開始練習 (Start)</button>
         </div>
     </div>
 
     <!-- MAIN APP -->
-    <div id="app-content" class="" style="display: flex;">
-        <header class="">
-            <h1 style="margin:0; font-size:1.4rem;" class="">B4L6 Vocabulary Speaking</h1>
-            <div id="user-info" style="font-size:0.9rem; opacity:0.8; margin-top:2px;" class="">Electrical - Sean</div>
+    <div id="app-content">
+        <header>
+            <h1 style="margin:0; font-size:1.4rem;">B4L6 Vocabulary Speaking</h1>
+            <div id="user-info" style="font-size:0.9rem; opacity:0.8; margin-top:2px;"></div>
             
             <div class="stats-container">
                 <div id="current-avg-score" class="live-stat">平均分數: 0</div>
                 <div id="progress-count" class="live-stat">已練習: 0 / 64</div>
             </div>
 
-            <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 3.125%;"></div></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
         </header>
 
         <div class="container">
             <div class="card">
                 <!-- Word Section -->
                 <div class="word-header">
-                    <div id="word-display" class="word-text">be<span class="dot">‧</span><span class="stress">neath</span></div>
-                    <div id="phonetic-display" class="phonetic">[bɪ´niθ]</div>
-                    <div id="meaning-display" class="meaning">在⋯⋯下面</div>
-                    <div class=""><span id="pos-display" class="pos-tag">prep.</span></div>
+                    <div id="word-display" class="word-text"></div>
+                    <div id="phonetic-display" class="phonetic"></div>
+                    <div id="meaning-display" class="meaning"></div>
+                    <div><span id="pos-display" class="pos-tag"></span></div>
                 </div>
 
                 <!-- Synonyms & Collocations -->
                 <div class="extra-info">
-                    <div style="margin-bottom: 8px;" class="">
+                    <div style="margin-bottom: 8px;">
                         <span class="info-label">Synonyms/Antonyms:</span>
-                        <span id="synonyms-display" class="info-content">below, under; (ANT) above, over</span>
+                        <span id="synonyms-display" class="info-content"></span>
                     </div>
-                    <div class="">
+                    <div>
                         <span class="info-label">Collocations:</span>
-                        <span id="collocations-display" class="info-content"><span class="colloc-item">sink beneath</span></span>
+                        <span id="collocations-display" class="info-content"></span>
                     </div>
                 </div>
 
@@ -334,23 +337,27 @@
                     <button type="button" class="btn-audio" onclick="speakText(currentWord)">
                         🔊 聽單字 (Listen)
                     </button>
-                    <button type="button" class="btn-speak" id="btn-speak-word" onclick="startListening('word')">🎤 唸單字 (Speak)</button>
+                    <button type="button" class="btn-speak" id="btn-speak-word" onclick="startListening('word')">
+                        🎤 唸單字 (Speak)
+                    </button>
                 </div>
-                <div id="feedback-word" class="speech-feedback fail">📡 網路連線問題。</div>
+                <div id="feedback-word" class="speech-feedback"></div>
 
                 <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
 
                 <!-- Sentence Section -->
                 <div class="sentence-area">
                     <div class="sentence-label">Example Sentence</div>
-                    <div id="sentence-en" class="en-sentence">After hitting a giant rock, the fishing boat started to sink beneath the waves.</div>
-                    <div id="sentence-ch" class="ch-sentence">在撞上一塊巨石後，那艘漁船開始沉入海浪之下。</div>
+                    <div id="sentence-en" class="en-sentence"></div>
+                    <div id="sentence-ch" class="ch-sentence"></div>
                     
                     <div class="control-group" style="justify-content: flex-start; margin-top:15px;">
                         <button type="button" class="btn-audio" onclick="speakText(currentSentence)">
                             🔊 聽例句
                         </button>
-                        <button type="button" class="btn-speak" id="btn-speak-sent" onclick="startListening('sentence')" style="font-size:1rem; padding:8px 16px;">🎤 唸例句 (Speak)</button>
+                        <button type="button" class="btn-speak" id="btn-speak-sent" onclick="startListening('sentence')" style="font-size:1rem; padding:8px 16px;">
+                            🎤 唸例句
+                        </button>
                     </div>
                     <div id="feedback-sentence" class="speech-feedback" style="text-align: left;"></div>
                 </div>
@@ -362,7 +369,7 @@
                     <button type="button" class="nav-btn" onclick="changeCard(1)">下一個 →</button>
                 </div>
 
-                <button type="button" class="finish-btn" id="finish-btn" onclick="submitProgress()" style="display: none;">
+                <button type="button" class="finish-btn" id="finish-btn" onclick="submitProgress()">
                     🎉 完成練習，傳送成績 (Finish)
                 </button>
                 <p id="status-msg" style="margin-top:10px; color:#666; font-weight:bold;"></p>
@@ -777,6 +784,6 @@
         });
     }
 </script>
-
-
-```eof</body></html>
+</body>
+</html>
+```eof
